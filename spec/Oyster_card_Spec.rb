@@ -35,7 +35,7 @@ describe OysterCard do
 
     it 'charges you after journey' do 
       subject.top_up(OysterCard::MAXIMUM_BALANCE)
-      subject.touch_in
+      subject.touch_in(station)
       expect { subject.touch_out }.to change { subject.balance }.by(-OysterCard::MINIMUM_CHARGE)
     end
   end
@@ -47,17 +47,19 @@ describe OysterCard do
 
     it 'can tap in to be in journey' do
       subject.top_up(OysterCard::MAXIMUM_BALANCE)
-      subject.touch_in
+      subject.touch_in(station)
       expect(subject.in_journey?).to be(true)
     end
 
-    # it 'allows you to touch in with a station' do
-    #   expect(subject.touch_in(station)).to eq(station)
-    # end
+    it 'allows you to touch in with a station' do
+      subject.balance = OysterCard::MAXIMUM_BALANCE
+      subject.touch_in(station)
+      expect(subject.entry_station).to eq(station)
+    end
     
     it 'can tap out to be out of journey' do 
       subject.top_up(OysterCard::MAXIMUM_BALANCE)
-      subject.touch_in
+      subject.touch_in(station)
       subject.touch_out
       expect(subject.in_journey?).to be(false)
     end
@@ -66,7 +68,7 @@ describe OysterCard do
       it 'will not touch in if below minimum balance' do
         oyster_card = subject
         oyster_card.balance = 0
-        expect{ subject.touch_in }.to raise_error "Insufficient balance to touch in"
+        expect{ subject.touch_in(station) }.to raise_error "Insufficient balance to touch in"
       end
     end
   end
