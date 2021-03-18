@@ -2,6 +2,27 @@ require 'Oyster_Card'
 
 describe OysterCard do
   let(:station) {double :station}
+  let(:entry_station) {double :station}
+  let(:exit_station) {double :station}
+
+  it 'stores the exit station' do
+    subject.top_up(OysterCard::MAXIMUM_BALANCE)
+    subject.touch_in(entry_station)
+    subject.touch_out(exit_station)
+    expect(subject.touch_out(exit_station)).to eq(exit_station)
+    # Change to exit station instead of touch out
+  end
+
+  describe 'it stores a journey' do
+    let(:journey) { {entry_station: entry_station, exit_station: exit_station} }
+
+    it 'stores a journey' do 
+      subject.top_up(OysterCard::MAXIMUM_BALANCE)
+      subject.touch_in(entry_station)
+      subject.touch_out(exit_station)
+      expect(subject.journey_list).to include(:journey)
+    end
+  end
 
   it 'shows the balance' do
     expect(subject.balance).to eq(0)
@@ -10,6 +31,11 @@ describe OysterCard do
   it 'responds to entry station' do
     expect(subject).to respond_to(:entry_station)
   end
+
+  it 'checks that the card has no previous journeys' do
+    expect(subject.journey_list).to eq([])
+  end
+
 
   describe '#top_up' do
     it 'can add money to balance' do
@@ -36,7 +62,7 @@ describe OysterCard do
     it 'charges you after journey' do 
       subject.top_up(OysterCard::MAXIMUM_BALANCE)
       subject.touch_in(station)
-      expect { subject.touch_out }.to change { subject.balance }.by(-OysterCard::MINIMUM_CHARGE)
+      expect { subject.touch_out(station) }.to change { subject.balance }.by(-OysterCard::MINIMUM_CHARGE)
     end
   end
 
@@ -60,8 +86,7 @@ describe OysterCard do
     it 'can tap out to be out of journey' do 
       subject.top_up(OysterCard::MAXIMUM_BALANCE)
       subject.touch_in(station)
-      subject.touch_out
-      expect(subject.in_journey?).to be(false)
+      expect(subject.touch_out(station)).to be(station)
     end
 
     describe 'Travelleing with minimum balance' do 
